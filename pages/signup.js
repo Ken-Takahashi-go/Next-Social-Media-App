@@ -112,6 +112,8 @@ class Signup extends React.Component {
               {isLoading ? "Signing up ...." : "Sign up"}
             </Button>
           </form>
+          {/* Error Snackbar */}
+
           {error && (
             <Snackbar
               anchorOrigin={{

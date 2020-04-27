@@ -11,32 +11,158 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 import Divider from "@material-ui/core/Divider";
 import Edit from "@material-ui/icons/Edit";
 import withStyles from "@material-ui/core/styles/withStyles";
+import format from "date-fns/format";
+
 import { authInitialProps } from "./../lib/auth";
-import { getUser } from "./../lib/api";
+import {
+  getUser,
+  getPostByUser,
+  deletePost,
+  likePost,
+  unlikePost,
+  addComment,
+  deleteComment,
+} from "./../lib/api";
 import Link from "next/link";
+
+import DeleteUser from "../components/profile/DeleteUser";
+import FollowUser from "./../components/profile/FollowUser";
+import ProfileTabs from "../components/profile/ProfileTabs";
 
 class Profile extends React.Component {
   state = {
     user: null,
+    posts: [],
     isAuth: false,
+    isFollowing: false,
     isLoading: true,
+    isDeletingPost: false,
   };
 
-  componentDidMount() {
+  componentDidMount = async () => {
     const { userId, auth } = this.props;
     const isAuth = auth.user._id === userId;
-    getUser(userId).then((user) => {
-      this.setState({
-        user,
-        isAuth,
-        isLoading: false,
-      });
+    const user = await getUser(userId);
+    const isFollowing = await this.checkFollow(auth, user);
+    const post = await getPostByUser(userId);
+    this.setState({
+      user,
+      post,
+      isAuth,
+      isFollowing,
+      isLoading: false,
     });
-  }
+  };
+
+  checkFollow = (auth, user) => {
+    return (
+      user.followers.findIndex((follower) => follower._id === auth.user._id) >
+      -1
+    );
+  };
+
+  toggleFollow = (sendRequest) => {
+    const { userId } = this.props;
+    const { isFollowing } = this.state;
+    sendRequest(userId).then(() => {
+      this.setState({ isFollowing: !isFollowing });
+    });
+  };
+
+  handleDeletePost = (deletedPost) => {
+    this.setState({ isDeletingPost: true });
+
+    deletePost(deletedPost._id)
+      .then((postData) => {
+        const postIndex = this.state.posts.findIndex(
+          (post) => post._id === postData._id
+        );
+        const updatedPosts = [
+          ...this.state.posts.slice(0, postIndex),
+          ...this.state.posts.slice(postIndex + 1),
+        ];
+        this.setState({
+          posts: updatedPosts,
+          isDeletingPost: false,
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  handleToggleLike = (post) => {
+    const { auth } = this.props;
+
+    const isPostLiked = post.likes.includes(auth.user._id);
+    const sendRequest = isPostLiked ? unlikePost : likePost;
+    sendRequest(post._id)
+      .then((postData) => {
+        const postIndex = this.state.posts.findIndex(
+          (post) => post._id === postData._id
+        );
+        const updatedPosts = [
+          ...this.state.posts.slice(0, postIndex),
+          postData,
+          ...this.state.posts.slice(postIndex + 1),
+        ];
+        this.setState({ posts: updatedPosts });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  handleAddComment = (postId, text) => {
+    const comment = { text };
+    addComment(postId, comment)
+      .then((postData) => {
+        const postIndex = this.state.posts.findIndex(
+          (post) => post._id === postData._id
+        );
+        const updatedPosts = [
+          ...this.state.posts.slice(0, postIndex),
+          postData,
+          ...this.state.posts.slice(postIndex + 1),
+        ];
+        this.setState({ posts: updatedPosts });
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  };
+
+  handleDeleteComment = (postId, comment) => {
+    deleteComment(postId, comment)
+      .then((postData) => {
+        const postIndex = this.state.posts.findIndex(
+          (post) => post._id === postData._Id
+        );
+        const updatedPosts = [
+          ...this.state.posts.slice(0, postIndex),
+          postData,
+          ...this.state.posts.slice(postIndex + 1),
+        ];
+        this.setState({ posts: updatedPosts });
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  };
+
+  formatDate = (date) => format(date, "dddd,MMMM Do,YYYY");
+  // Teusday , November 6th , 2018
 
   render() {
-    const { isLoading } = this.state;
-    const { classes, user, isAuth } = this.props;
+    const { classes, auth } = this.props;
+    const {
+      isLoading,
+      posts,
+      user,
+      isAuth,
+      isFollowing,
+      isDeletingPost,
+    } = this.state;
 
     return (
       <Paper className={classes.root} elevation={4}>
@@ -77,18 +203,33 @@ class Profile extends React.Component {
                       </IconButton>
                     </a>
                   </Link>
+                  <DeleteUser user={user} />
                 </ListItemSecondaryAction>
               ) : (
-                <div>Follow</div>
+                <FollowUser
+                  isFollowing={isFollowing}
+                  toggleFollow={this.toggleFollow}
+                />
               )}
             </ListItem>
             <Divider />
             <ListItem>
               <ListItemText
                 primary={user.about}
-                secondary={`Joined:${user.createdAt}`}
+                secondary={`Joined:${this.formatDate(user.createdAt)}`}
               />
             </ListItem>
+            {/* Display User's Posts , Following , and Followers */}
+            <ProfileTabs
+              auth={auth}
+              user={user}
+              posts={posts}
+              isDeletingPost={isDeletingPost}
+              handleDeletePost={this.handleDeletePost}
+              handleToggleLike={this.handleToggleLike}
+              handleAddComment={this.handleAddComment}
+              handleDeleteComment={this.handleDeleteComment}
+            />
           </List>
         )}
       </Paper>
@@ -124,6 +265,6 @@ const styles = (theme) => ({
   },
 });
 
-// Profile.getInitialProps = authInitialProps(true);
+Profile.getInitialProps = authInitialProps(true);
 
 export default withStyles(styles)(Profile);

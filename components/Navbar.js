@@ -13,7 +13,7 @@ const Navbar = ({ classes, router, pageProps: { auth } }) => {
   return (
     <AppBar
       className={classes.appBar}
-      position={router.pathname === "/" ? "fiexed" : "static"}
+      position={router.pathname === "/" ? "fixed" : "static"}
     >
       <Toolbar>
         <ActiveLink href="/">
@@ -27,7 +27,7 @@ const Navbar = ({ classes, router, pageProps: { auth } }) => {
         >
           <ActiveLink href="/"> NextConnect</ActiveLink>
         </Typography>
-        {!user._id ? (
+        {user._id ? (
           // Auth navigation
           <div>
             <Button href="/">
