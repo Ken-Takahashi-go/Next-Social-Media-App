@@ -4,7 +4,7 @@ import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
 
 import Post from "../../components/index/Post";
-import FollowTab from "../../components/profile/FollowTab";
+import FollowTab from "./FollowTab";
 
 class ProfileTabs extends React.Component {
   state = {
@@ -33,10 +33,10 @@ class ProfileTabs extends React.Component {
         <AppBar position="static" color="default">
           <Tabs
             value={tab}
-            onChange={this.handleChange}
+            onChange={this.handleTabChange}
             indicatorColor="secondary"
             textColor="secondary"
-            // fullWidth
+            variant="fullWidth"
           >
             <Tab label="Posts" />
             <Tab label="Following" />
@@ -61,12 +61,12 @@ class ProfileTabs extends React.Component {
         )}
         {tab === 1 && (
           <TabContainer>
-            <FollowTab users={users.Following} />
+            <FollowTab users={user.following} />
           </TabContainer>
         )}
         {tab === 2 && (
           <TabContainer>
-            <FollowTab users={users.Followers} />
+            <FollowTab users={user.followers} />
           </TabContainer>
         )}
       </div>

@@ -7,7 +7,7 @@ import Link from "next/link";
 
 const FollowTab = ({ classes, users }) => (
   <div className={classes.root}>
-    <GridList cellWeight={160} className={classes.gridList} cols={4}>
+    <GridList cellHeight={160} className={classes.gridList} cols={4}>
       {users.map((user) => (
         <GridListTile style={{ height: 120 }} key={user._id}>
           <Link href={`/profile/${user._id}`}>
@@ -15,9 +15,11 @@ const FollowTab = ({ classes, users }) => (
               <Avatar src={user.avatar} className={classes.bigAvatar} />
               <Typography
                 component="h3"
-                variant="sutitle1"
+                variant="subtitle1"
                 className={classes.tileText}
-              ></Typography>
+              >
+                {user.name}
+              </Typography>
             </a>
           </Link>
         </GridListTile>

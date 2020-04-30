@@ -44,10 +44,10 @@ class Profile extends React.Component {
     const isAuth = auth.user._id === userId;
     const user = await getUser(userId);
     const isFollowing = await this.checkFollow(auth, user);
-    const post = await getPostByUser(userId);
+    const posts = await getPostByUser(userId);
     this.setState({
       user,
-      post,
+      posts,
       isAuth,
       isFollowing,
       isLoading: false,
@@ -193,7 +193,7 @@ class Profile extends React.Component {
                 primary={user.name}
                 secondary={user.email}
               ></ListItemText>
-              {/*    Auth - Edit Buttons /UnAuth -Follow Buttons*/}
+              {/*    Auth - Edit Buttons / UnAuth -Follow Buttons*/}
               {isAuth ? (
                 <ListItemSecondaryAction>
                   <Link href="/edit-profile">
