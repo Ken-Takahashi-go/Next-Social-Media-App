@@ -56,7 +56,6 @@ const Index = ({ classes, auth }) => (
           gutterBottom
         >
           {" "}
-          Aasjalgjdlkajgdslkjsalkjdglksdjglkdjglksajslkgj;alkjg;lakjgfdl
         </Typography>
         <Button
           className={classes.fabButton}
